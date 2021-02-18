@@ -1,6 +1,7 @@
 {
   "name": "@civ-clone/civ1-treasury",
   "version": "0.1.0",
+  "main": "index.js",
   "repository": "git@github.com:civ-clone/civ1-treasury.git",
   "keywords": [
     "typescript",

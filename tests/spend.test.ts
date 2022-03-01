@@ -27,53 +27,53 @@ describe('city:spend', (): void => {
 
   availableCityBuildItemsRegistry.register(Warrior, Temple);
 
-  ([
-    [Temple, 0, 160],
-    [Temple, 1, 78],
-    [Temple, 39, 2],
-    [Warrior, 0, 50],
-    [Warrior, 1, 22],
-    [Warrior, 9, 2],
-  ] as [typeof CityImprovement | typeof Unit, number, number][]).forEach(
-    ([BuildItem, progress, expectedCost]): void => {
-      it(`should cost ${expectedCost} Gold to buy a ${BuildItem.name} with ${progress} progress`, (): void => {
-        const city = setUpCity({
-            ruleRegistry,
-          }),
-          cityBuild = new CityBuild(
-            city,
-            availableCityBuildItemsRegistry,
-            ruleRegistry
-          );
-
-        cityBuildRegistry.register(cityBuild);
-
-        const playerTreasury = new PlayerTreasury(
-          city.player(),
-          cityBuildRegistry,
+  (
+    [
+      [Temple, 0, 160],
+      [Temple, 1, 78],
+      [Temple, 39, 2],
+      [Warrior, 0, 50],
+      [Warrior, 1, 22],
+      [Warrior, 9, 2],
+    ] as [typeof CityImprovement | typeof Unit, number, number][]
+  ).forEach(([BuildItem, progress, expectedCost]): void => {
+    it(`should cost ${expectedCost} Gold to buy a ${BuildItem.name} with ${progress} progress`, (): void => {
+      const city = setUpCity({
+          ruleRegistry,
+        }),
+        cityBuild = new CityBuild(
+          city,
+          availableCityBuildItemsRegistry,
           ruleRegistry
         );
 
-        playerTreasury.add(expectedCost);
+      cityBuildRegistry.register(cityBuild);
 
-        expect(playerTreasury.value()).to.equal(expectedCost);
+      const playerTreasury = new PlayerTreasury(
+        city.player(),
+        cityBuildRegistry,
+        ruleRegistry
+      );
 
-        cityBuild.build(BuildItem);
+      playerTreasury.add(expectedCost);
 
-        expect(cityBuild.progress().value()).to.equal(0);
+      expect(playerTreasury.value()).to.equal(expectedCost);
 
-        cityBuild.add(new Production(progress));
+      cityBuild.build(BuildItem);
 
-        expect(cityBuild.progress().value()).to.equal(progress);
+      expect(cityBuild.progress().value()).to.equal(0);
 
-        const goldCost = playerTreasury.cost(city);
+      cityBuild.add(new Production(progress));
 
-        expect(goldCost.value()).to.equal(expectedCost);
+      expect(cityBuild.progress().value()).to.equal(progress);
 
-        playerTreasury.buy(city);
+      const goldCost = playerTreasury.cost(city);
 
-        expect(playerTreasury.value()).to.equal(0);
-      });
-    }
-  );
+      expect(goldCost.value()).to.equal(expectedCost);
+
+      playerTreasury.buy(city);
+
+      expect(playerTreasury.value()).to.equal(0);
+    });
+  });
 });

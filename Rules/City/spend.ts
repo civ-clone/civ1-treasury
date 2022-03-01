@@ -15,15 +15,13 @@ export const getRules: () => Spend[] = (): Spend[] => [
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() === 0
     ),
-    new Effect(
-      (cityBuild: CityBuild, cost: Yield): Yield => {
-        const price = cityBuild.remaining() / 10;
+    new Effect((cityBuild: CityBuild, cost: Yield): Yield => {
+      const price = cityBuild.remaining() / 10;
 
-        cost.add(Math.floor((price + 4) * 10 * price));
+      cost.add(Math.floor((price + 4) * 10 * price));
 
-        return cost;
-      }
-    )
+      return cost;
+    })
   ),
 
   new Spend(
@@ -33,15 +31,13 @@ export const getRules: () => Spend[] = (): Spend[] => [
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() > 0
     ),
-    new Effect(
-      (cityBuild: CityBuild, cost: Yield): Yield => {
-        const price = cityBuild.remaining() / 10;
+    new Effect((cityBuild: CityBuild, cost: Yield): Yield => {
+      const price = cityBuild.remaining() / 10;
 
-        cost.add(Math.floor(5 * price ** 2 + 20 * price));
+      cost.add(Math.floor(5 * price ** 2 + 20 * price));
 
-        return cost;
-      }
-    )
+      return cost;
+    })
   ),
 
   new Spend(
@@ -54,13 +50,11 @@ export const getRules: () => Spend[] = (): Spend[] => [
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() === 0
     ),
-    new Effect(
-      (cityBuild: CityBuild, cost: Yield): Yield => {
-        cost.add(cityBuild.remaining() * 4);
+    new Effect((cityBuild: CityBuild, cost: Yield): Yield => {
+      cost.add(cityBuild.remaining() * 4);
 
-        return cost;
-      }
-    )
+      return cost;
+    })
   ),
 
   new Spend(
@@ -73,13 +67,11 @@ export const getRules: () => Spend[] = (): Spend[] => [
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() > 0
     ),
-    new Effect(
-      (cityBuild: CityBuild, cost: Yield): Yield => {
-        cost.add(cityBuild.remaining() * 2);
+    new Effect((cityBuild: CityBuild, cost: Yield): Yield => {
+      cost.add(cityBuild.remaining() * 2);
 
-        return cost;
-      }
-    )
+      return cost;
+    })
   ),
 ];
 

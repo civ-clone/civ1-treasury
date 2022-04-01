@@ -9,8 +9,10 @@ import Yield from '@civ-clone/core-yield/Yield';
 export const getRules: () => Spend[] = (): Spend[] => [
   // @see https://forums.civfanatics.com/threads/buy-unit-building-wonder-price.576026/
   new Spend(
-    new Criterion((cityBuild: CityBuild): boolean =>
-      Object.isPrototypeOf.call(Unit, <typeof Unit>cityBuild.building())
+    new Criterion(
+      (cityBuild: CityBuild): boolean =>
+        typeof cityBuild.building() !== 'undefined' &&
+        Object.isPrototypeOf.call(Unit, cityBuild.building()!.item())
     ),
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() === 0
@@ -25,8 +27,10 @@ export const getRules: () => Spend[] = (): Spend[] => [
   ),
 
   new Spend(
-    new Criterion((cityBuild: CityBuild): boolean =>
-      Object.isPrototypeOf.call(Unit, <typeof Unit>cityBuild.building())
+    new Criterion(
+      (cityBuild: CityBuild): boolean =>
+        typeof cityBuild.building() !== 'undefined' &&
+        Object.isPrototypeOf.call(Unit, cityBuild.building()!.item())
     ),
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() > 0
@@ -41,11 +45,10 @@ export const getRules: () => Spend[] = (): Spend[] => [
   ),
 
   new Spend(
-    new Criterion((cityBuild: CityBuild): boolean =>
-      Object.isPrototypeOf.call(
-        CityImprovement,
-        <typeof CityImprovement>cityBuild.building()
-      )
+    new Criterion(
+      (cityBuild: CityBuild): boolean =>
+        typeof cityBuild.building() !== 'undefined' &&
+        Object.isPrototypeOf.call(CityImprovement, cityBuild.building()!.item())
     ),
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() === 0
@@ -58,11 +61,10 @@ export const getRules: () => Spend[] = (): Spend[] => [
   ),
 
   new Spend(
-    new Criterion((cityBuild: CityBuild): boolean =>
-      Object.isPrototypeOf.call(
-        CityImprovement,
-        <typeof CityImprovement>cityBuild.building()
-      )
+    new Criterion(
+      (cityBuild: CityBuild): boolean =>
+        typeof cityBuild.building() !== 'undefined' &&
+        Object.isPrototypeOf.call(CityImprovement, cityBuild.building()!.item())
     ),
     new Criterion(
       (cityBuild: CityBuild): boolean => cityBuild.progress().value() > 0

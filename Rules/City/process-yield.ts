@@ -1,3 +1,4 @@
+import { CityImprovementMaintenanceGold, Gold } from '../../Yields';
 import {
   PlayerTreasuryRegistry,
   instance as playerTreasuryRegistryInstance,
@@ -13,7 +14,6 @@ import {
 import City from '@civ-clone/core-city/City';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import { Gold } from '@civ-clone/base-city-yield-gold/Gold';
 import ProcessYield from '@civ-clone/core-city/Rules/ProcessYield';
 import Yield from '@civ-clone/core-yield/Yield';
 
@@ -26,10 +26,18 @@ export const getRules: (
 ): ProcessYield[] => [
   new ProcessYield(
     new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
-    new Effect((cityYield: Yield, city: City): void => {
-      const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
+    new Effect((cityYield: Yield, city: City, yields: Yield[]): void => {
+      const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player()),
+        gold = new Gold(cityYield);
 
-      playerTreasury.add(cityYield);
+      yields.forEach((cityYield) => {
+        if (cityYield instanceof CityImprovementMaintenanceGold) {
+          gold.subtract(cityYield as Yield);
+        }
+      });
+
+      playerTreasury.add(gold, city.name());
+
       (ruleRegistry as IUpdatedRegistry).process(Updated, playerTreasury, city);
     })
   ),

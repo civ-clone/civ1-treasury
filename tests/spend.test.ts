@@ -1,12 +1,11 @@
 import AvailableCityBuildItemsRegistry from '@civ-clone/core-city-build/AvailableCityBuildItemsRegistry';
+import Buildable from '@civ-clone/core-city-build/Buildable';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import CityBuildRegistry from '@civ-clone/core-city-build/CityBuildRegistry';
-import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import PlayerTreasury from '@civ-clone/core-treasury/PlayerTreasury';
 import { Production } from '@civ-clone/civ1-world/Yields';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import { Temple } from '@civ-clone/civ1-city-improvement/CityImprovements';
-import Unit from '@civ-clone/core-unit/Unit';
 import { Warrior } from '@civ-clone/civ1-unit/Units';
 import cityImprovementBuildCost from '@civ-clone/civ1-city-improvement/Rules/City/build-cost';
 import { expect } from 'chai';
@@ -25,7 +24,9 @@ describe('city:spend', (): void => {
     ...unitBuildCost()
   );
 
-  availableCityBuildItemsRegistry.register(Warrior, Temple);
+  availableCityBuildItemsRegistry.register(
+    ...([Warrior, Temple] as unknown as typeof Buildable[])
+  );
 
   (
     [
@@ -35,10 +36,10 @@ describe('city:spend', (): void => {
       [Warrior, 0, 50],
       [Warrior, 1, 22],
       [Warrior, 9, 2],
-    ] as [typeof CityImprovement | typeof Unit, number, number][]
+    ] as [unknown, number, number][] as [typeof Buildable, number, number][]
   ).forEach(([BuildItem, progress, expectedCost]): void => {
-    it(`should cost ${expectedCost} Gold to buy a ${BuildItem.name} with ${progress} progress`, (): void => {
-      const city = setUpCity({
+    it(`should cost ${expectedCost} Gold to buy a ${BuildItem.name} with ${progress} progress`, async (): Promise<void> => {
+      const city = await setUpCity({
           ruleRegistry,
         }),
         cityBuild = new CityBuild(

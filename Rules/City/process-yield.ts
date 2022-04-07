@@ -1,8 +1,16 @@
 import { CityImprovementMaintenanceGold, Gold } from '../../Yields';
 import {
+  CityImprovementRegistry,
+  instance as cityImprovementRegistryInstance,
+} from '@civ-clone/core-city-improvement/CityImprovementRegistry';
+import {
   CivilDisorder,
   ICivilDisorderRegistry,
 } from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
+import {
+  Engine,
+  instance as engineInstance,
+} from '@civ-clone/core-engine/Engine';
 import {
   PlayerTreasuryRegistry,
   instance as playerTreasuryRegistryInstance,
@@ -15,33 +23,56 @@ import {
   Updated,
   IUpdatedRegistry,
 } from '@civ-clone/core-treasury/Rules/Updated';
+import BuildItem from '@civ-clone/core-city-build/BuildItem';
+import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import Low from '@civ-clone/core-rule/Priorities/Low';
 import ProcessYield from '@civ-clone/core-city/Rules/ProcessYield';
 import Yield from '@civ-clone/core-yield/Yield';
 
 export const getRules: (
   playerTreasuryRegistry?: PlayerTreasuryRegistry,
-  ruleRegistry?: RuleRegistry
+  ruleRegistry?: RuleRegistry,
+  cityImprovementRegistry?: CityImprovementRegistry,
+  engine?: Engine
 ) => ProcessYield[] = (
   playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance,
-  ruleRegistry: RuleRegistry = ruleRegistryInstance
+  ruleRegistry: RuleRegistry = ruleRegistryInstance,
+  cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
+  engine: Engine = engineInstance
 ): ProcessYield[] => [
   new ProcessYield(
     new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
-    new Effect((cityYield: Yield, city: City, yields: Yield[]): void =>
+    new Effect((cityYield: Yield, city: City, yields: Yield[]): void => {
+      const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
+
       yields.forEach((cityYield) => {
         if (cityYield instanceof CityImprovementMaintenanceGold) {
-          cityYield.subtract(cityYield as Yield);
+          if (playerTreasury.value() < cityYield.value()) {
+            const cityImprovement = cityYield.cityImprovement(),
+              buildItem = new BuildItem(
+                cityImprovement.constructor as typeof Buildable,
+                city,
+                ruleRegistry
+              );
+
+            cityImprovementRegistry.unregister(cityImprovement);
+
+            playerTreasury.add(buildItem.cost().value());
+
+            engine.emit('city:unsupported-improvement', city, cityImprovement);
+
+            return;
+          }
+
+          playerTreasury.subtract(cityYield.value(), city.name());
         }
-      })
-    )
+      });
+    })
   ),
 
   new ProcessYield(
-    new Low(),
     new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
     new Criterion(
       (cityYield: Yield, city: City, yields: Yield[]) =>
@@ -53,30 +84,6 @@ export const getRules: (
       const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
 
       playerTreasury.add(cityYield, city.name());
-
-      (ruleRegistry as IUpdatedRegistry).process(Updated, playerTreasury, city);
-    })
-  ),
-
-  new ProcessYield(
-    new Low(),
-    new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
-    new Criterion((cityYield: Yield, city: City, yields: Yield[]) =>
-      (ruleRegistry as ICivilDisorderRegistry)
-        .get(CivilDisorder)
-        .some((rule: CivilDisorder): boolean => rule.validate(city, yields))
-    ),
-    new Effect((cityYield: Yield, city: City, yields: Yield[]): void => {
-      const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player()),
-        gold = new Gold(0);
-
-      yields.forEach((cityYield) => {
-        if (cityYield instanceof CityImprovementMaintenanceGold) {
-          gold.subtract(cityYield as Yield);
-        }
-      });
-
-      playerTreasury.add(gold, city.name());
 
       (ruleRegistry as IUpdatedRegistry).process(Updated, playerTreasury, city);
     })

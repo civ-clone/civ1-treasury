@@ -16,7 +16,7 @@ export const getRules: (cityRegistry?: CityRegistry) => Action[] = (
     new Effect((player: Player): PlayerAction[] =>
       cityRegistry
         .getByPlayer(player)
-        .map((city: City) => new CompleteProduction(city))
+        .map((city: City) => new CompleteProduction(player, city))
     )
   ),
 ];

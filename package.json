@@ -40,7 +40,7 @@
     "@civ-clone/base-city-yield-gold": "^0.1.0",
     "@civ-clone/core-city": "^0.1.0",
     "@civ-clone/core-city-build": "^0.1.0",
-    "@civ-clone/core-city-happiness": "github:civ-clone/core-city-happiness",
+    "@civ-clone/core-city-happiness": "^0.1.0",
     "@civ-clone/core-city-improvement": "^0.1.0",
     "@civ-clone/core-engine": "^0.1.0",
     "@civ-clone/core-player": "^0.1.0",

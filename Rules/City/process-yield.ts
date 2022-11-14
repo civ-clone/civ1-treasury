@@ -4,10 +4,6 @@ import {
   instance as cityImprovementRegistryInstance,
 } from '@civ-clone/core-city-improvement/CityImprovementRegistry';
 import {
-  CivilDisorder,
-  ICivilDisorderRegistry,
-} from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
-import {
   Engine,
   instance as engineInstance,
 } from '@civ-clone/core-engine/Engine';
@@ -19,16 +15,14 @@ import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
-import {
-  Updated,
-  IUpdatedRegistry,
-} from '@civ-clone/core-treasury/Rules/Updated';
 import BuildItem from '@civ-clone/core-city-build/BuildItem';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
+import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import ProcessYield from '@civ-clone/core-city/Rules/ProcessYield';
+import Updated from '@civ-clone/core-treasury/Rules/Updated';
 import Yield from '@civ-clone/core-yield/Yield';
 
 export const getRules: (
@@ -50,7 +44,7 @@ export const getRules: (
       yields.forEach((cityYield) => {
         if (cityYield instanceof CityImprovementMaintenanceGold) {
           if (playerTreasury.value() < cityYield.value()) {
-            const cityImprovement = cityYield.cityImprovement(),
+            const cityImprovement = cityYield.cityImprovement()!,
               buildItem = new BuildItem(
                 cityImprovement.constructor as typeof Buildable,
                 city,
@@ -76,7 +70,7 @@ export const getRules: (
     new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
     new Criterion(
       (cityYield: Yield, city: City, yields: Yield[]) =>
-        !(ruleRegistry as ICivilDisorderRegistry)
+        !ruleRegistry
           .get(CivilDisorder)
           .some((rule: CivilDisorder): boolean => rule.validate(city, yields))
     ),
@@ -85,7 +79,7 @@ export const getRules: (
 
       playerTreasury.add(cityYield, city.name());
 
-      (ruleRegistry as IUpdatedRegistry).process(Updated, playerTreasury, city);
+      ruleRegistry.process(Updated, playerTreasury, city);
     })
   ),
 ];

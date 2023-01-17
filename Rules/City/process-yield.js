@@ -14,7 +14,7 @@ const ProcessYield_1 = require("@civ-clone/core-city/Rules/ProcessYield");
 const Updated_1 = require("@civ-clone/core-treasury/Rules/Updated");
 const getRules = (playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, engine = Engine_1.instance) => [
     new ProcessYield_1.default(new Criterion_1.default((cityYield) => cityYield instanceof Yields_1.Gold), new Effect_1.default((cityYield, city, yields) => {
-        const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
+        const playerTreasury = playerTreasuryRegistry.getByPlayerAndType(city.player(), Yields_1.Gold);
         yields.forEach((cityYield) => {
             if (cityYield instanceof Yields_1.CityImprovementMaintenanceGold) {
                 if (playerTreasury.value() < cityYield.value()) {
@@ -24,15 +24,15 @@ const getRules = (playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, ru
                     engine.emit('city:unsupported-improvement', city, cityImprovement);
                     return;
                 }
-                playerTreasury.subtract(cityYield.value(), city.name());
+                playerTreasury.subtract(cityYield.value());
             }
         });
     })),
     new ProcessYield_1.default(new Criterion_1.default((cityYield) => cityYield instanceof Yields_1.Gold), new Criterion_1.default((cityYield, city, yields) => !ruleRegistry
-        .get(CivilDisorder_1.default)
-        .some((rule) => rule.validate(city, yields))), new Effect_1.default((cityYield, city) => {
-        const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
-        playerTreasury.add(cityYield, city.name());
+        .process(CivilDisorder_1.default, city, yields)
+        .some((result) => result)), new Effect_1.default((cityYield, city) => {
+        const playerTreasury = playerTreasuryRegistry.getByPlayerAndType(city.player(), Yields_1.Gold);
+        playerTreasury.add(cityYield);
         ruleRegistry.process(Updated_1.default, playerTreasury, city);
     })),
 ];

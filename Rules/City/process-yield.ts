@@ -39,7 +39,10 @@ export const getRules: (
   new ProcessYield(
     new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
     new Effect((cityYield: Yield, city: City, yields: Yield[]): void => {
-      const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
+      const playerTreasury = playerTreasuryRegistry.getByPlayerAndType(
+        city.player(),
+        Gold
+      );
 
       yields.forEach((cityYield) => {
         if (cityYield instanceof CityImprovementMaintenanceGold) {
@@ -60,7 +63,7 @@ export const getRules: (
             return;
           }
 
-          playerTreasury.subtract(cityYield.value(), city.name());
+          playerTreasury.subtract(cityYield.value());
         }
       });
     })
@@ -71,13 +74,16 @@ export const getRules: (
     new Criterion(
       (cityYield: Yield, city: City, yields: Yield[]) =>
         !ruleRegistry
-          .get(CivilDisorder)
-          .some((rule: CivilDisorder): boolean => rule.validate(city, yields))
+          .process(CivilDisorder, city, yields)
+          .some((result: boolean): boolean => result)
     ),
     new Effect((cityYield: Yield, city: City): void => {
-      const playerTreasury = playerTreasuryRegistry.getByPlayer(city.player());
+      const playerTreasury = playerTreasuryRegistry.getByPlayerAndType(
+        city.player(),
+        Gold
+      );
 
-      playerTreasury.add(cityYield, city.name());
+      playerTreasury.add(cityYield);
 
       ruleRegistry.process(Updated, playerTreasury, city);
     })

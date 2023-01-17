@@ -1,14 +1,12 @@
-import City from '@civ-clone/core-city/City';
-import PlayerAction, {
+import {
+  PlayerAction,
   IPlayerAction,
 } from '@civ-clone/core-player/PlayerAction';
+import CityBuild from '@civ-clone/core-city-build/CityBuild';
 export interface ICompleteProduction extends IPlayerAction {
-  value(): City;
+  value(): CityBuild;
 }
 export declare class CompleteProduction
-  extends PlayerAction
-  implements ICompleteProduction
-{
-  value(): City;
-}
+  extends PlayerAction<CityBuild>
+  implements ICompleteProduction {}
 export default CompleteProduction;

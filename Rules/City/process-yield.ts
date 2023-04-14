@@ -45,8 +45,14 @@ export const getRules: (
       );
 
       yields.forEach((cityYield) => {
+        if (!(cityYield instanceof Gold)) {
+          return;
+        }
+
+        playerTreasury.add(cityYield);
+
         if (cityYield instanceof CityImprovementMaintenanceGold) {
-          if (playerTreasury.value() < cityYield.value()) {
+          if (playerTreasury.value() < 0) {
             const cityImprovement = cityYield.cityImprovement()!,
               buildItem = new BuildItem(
                 cityImprovement.constructor as typeof Buildable,
@@ -62,30 +68,8 @@ export const getRules: (
 
             return;
           }
-
-          playerTreasury.subtract(cityYield.value());
         }
       });
-    })
-  ),
-
-  new ProcessYield(
-    new Criterion((cityYield: Yield): boolean => cityYield instanceof Gold),
-    new Criterion(
-      (cityYield: Yield, city: City, yields: Yield[]) =>
-        !ruleRegistry
-          .process(CivilDisorder, city, yields)
-          .some((result: boolean): boolean => result)
-    ),
-    new Effect((cityYield: Yield, city: City): void => {
-      const playerTreasury = playerTreasuryRegistry.getByPlayerAndType(
-        city.player(),
-        Gold
-      );
-
-      playerTreasury.add(cityYield);
-
-      ruleRegistry.process(Updated, playerTreasury, city);
     })
   ),
 ];

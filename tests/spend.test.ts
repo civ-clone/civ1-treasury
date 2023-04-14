@@ -12,6 +12,7 @@ import { expect } from 'chai';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import spend from '../Rules/City/spend';
 import unitBuildCost from '@civ-clone/civ1-unit/Rules/City/buildCost';
+import {Gold} from "../Yields";
 
 describe('city:spend', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -52,6 +53,7 @@ describe('city:spend', (): void => {
 
       const playerTreasury = new PlayerTreasury(
         city.player(),
+        Gold,
         cityBuildRegistry,
         ruleRegistry
       );
@@ -68,7 +70,7 @@ describe('city:spend', (): void => {
 
       expect(cityBuild.progress().value()).to.equal(progress);
 
-      const goldCost = playerTreasury.cost(city);
+      const [goldCost] = playerTreasury.cost(city);
 
       expect(goldCost.value()).to.equal(expectedCost);
 

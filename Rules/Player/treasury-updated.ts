@@ -8,9 +8,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import PlayerTreasury from '@civ-clone/core-treasury/PlayerTreasury';
 import Updated from '@civ-clone/core-treasury/Rules/Updated';
 
-export const getRules: (engine?: Engine) => Updated[] = (
-  engine: Engine = engineInstance
-): Updated[] => [
+export const getRules = (engine: Engine = engineInstance): Updated[] => [
   // TODO: sell city improvements
   new Updated(
     new Criterion(

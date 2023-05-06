@@ -12,7 +12,7 @@ import { expect } from 'chai';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import spend from '../Rules/City/spend';
 import unitBuildCost from '@civ-clone/civ1-unit/Rules/City/buildCost';
-import {Gold} from "../Yields";
+import { Gold } from '../Yields';
 
 describe('city:spend', (): void => {
   const ruleRegistry = new RuleRegistry(),

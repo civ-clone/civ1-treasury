@@ -7,7 +7,7 @@ import Spend from '@civ-clone/core-treasury/Rules/Spend';
 import SpendCost from '@civ-clone/core-treasury/SpendCost';
 import Unit from '@civ-clone/core-unit/Unit';
 
-export const getRules: () => Spend[] = (): Spend[] => [
+export const getRules = (): Spend[] => [
   // @see https://forums.civfanatics.com/threads/buy-unit-building-wonder-price.576026/
   new Spend(
     new Criterion(

@@ -13,7 +13,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import Player from '@civ-clone/core-player/Player';
 import PlayerAction from '@civ-clone/core-player/PlayerAction';
 
-export const getRules: (cityRegistry?: CityRegistry) => Action[] = (
+export const getRules = (
   cityRegistry: CityRegistry = cityRegistryInstance,
   cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance
 ): Action[] => [

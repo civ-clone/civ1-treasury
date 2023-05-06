@@ -25,12 +25,7 @@ import ProcessYield from '@civ-clone/core-city/Rules/ProcessYield';
 import Updated from '@civ-clone/core-treasury/Rules/Updated';
 import Yield from '@civ-clone/core-yield/Yield';
 
-export const getRules: (
-  playerTreasuryRegistry?: PlayerTreasuryRegistry,
-  ruleRegistry?: RuleRegistry,
-  cityImprovementRegistry?: CityImprovementRegistry,
-  engine?: Engine
-) => ProcessYield[] = (
+export const getRules = (
   playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,

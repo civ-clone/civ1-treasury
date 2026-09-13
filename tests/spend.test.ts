@@ -26,7 +26,7 @@ describe('city:spend', (): void => {
   );
 
   availableCityBuildItemsRegistry.register(
-    ...([Warrior, Temple] as unknown as typeof Buildable[])
+    ...([Warrior, Temple] as unknown as (typeof Buildable)[])
   );
 
   (

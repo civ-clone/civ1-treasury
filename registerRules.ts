@@ -14,7 +14,8 @@ export const register = (game: Game): void =>
       game.playerTreasuries,
       game.rules,
       game.cityImprovements,
-      game.engine
+      game.engine,
+      game.playerGovernments
     ),
     ...treasuryUpdated(game.engine)
   );

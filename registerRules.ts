@@ -9,7 +9,13 @@ export const register = (game: Game): void =>
   game.rules.register(
     ...citySpend(),
     ...playerAction(game.cities, game.cityBuilds),
-    ...playerAdded(game.playerTreasuries, game.cityBuilds, game.rules),
+    ...playerAdded(
+      game.playerTreasuries,
+      game.cityBuilds,
+      game.rules,
+      game.difficulty,
+      game.clients
+    ),
     ...processYields(
       game.playerTreasuries,
       game.rules,

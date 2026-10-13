@@ -7,7 +7,7 @@ import { Game, defaultGame } from '@civ-clone/core-game';
 
 export const register = (game: Game): void =>
   game.rules.register(
-    ...citySpend(),
+    ...citySpend(game.rules),
     ...playerAction(game.cities, game.cityBuilds),
     ...playerAdded(
       game.playerTreasuries,

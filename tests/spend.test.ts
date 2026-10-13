@@ -43,7 +43,7 @@ describe('city:spend', (): void => {
       Temple,
       TestWonder,
       TestPart,
-    ] as unknown as typeof Buildable[])
+    ] as unknown as (typeof Buildable)[])
   );
 
   (

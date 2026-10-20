@@ -9,7 +9,10 @@ const Effect_1 = require("@civ-clone/core-rule/Effect");
 const getRules = (cityRegistry = CityRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance) => [
     new Action_1.default(new Effect_1.default((player) => cityRegistry
         .getByPlayer(player)
-        .map((city) => new PlayerActions_1.CompleteProduction(player, cityBuildRegistry.getByCity(city))))),
+        .flatMap((city) => [
+        new PlayerActions_1.CompleteProduction(player, cityBuildRegistry.getByCity(city)),
+        new PlayerActions_1.SellImprovement(player, city),
+    ]))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

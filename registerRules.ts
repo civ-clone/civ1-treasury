@@ -1,4 +1,5 @@
 import citySpend from './Rules/City/spend';
+import cityImprovementSell from './Rules/CityImprovement/sell';
 import playerAction from './Rules/Player/action';
 import playerAdded from './Rules/Player/added';
 import processYields from './Rules/City/process-yield';
@@ -8,6 +9,7 @@ import { Game, defaultGame } from '@civ-clone/core-game';
 export const register = (game: Game): void =>
   game.rules.register(
     ...citySpend(game.rules),
+    ...cityImprovementSell(game.rules, game.turn),
     ...playerAction(game.cities, game.cityBuilds),
     ...playerAdded(
       game.playerTreasuries,

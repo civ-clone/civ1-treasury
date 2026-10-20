@@ -8,7 +8,7 @@ import {
 } from '@civ-clone/core-city/CityRegistry';
 import Action from '@civ-clone/core-player/Rules/Action';
 import City from '@civ-clone/core-city/City';
-import { CompleteProduction } from '../../PlayerActions';
+import { CompleteProduction, SellImprovement } from '../../PlayerActions';
 import Effect from '@civ-clone/core-rule/Effect';
 import Player from '@civ-clone/core-player/Player';
 import PlayerAction from '@civ-clone/core-player/PlayerAction';
@@ -21,10 +21,10 @@ export const getRules = (
     new Effect((player: Player): PlayerAction[] =>
       cityRegistry
         .getByPlayer(player)
-        .map(
-          (city: City) =>
-            new CompleteProduction(player, cityBuildRegistry.getByCity(city))
-        )
+        .flatMap((city: City) => [
+          new CompleteProduction(player, cityBuildRegistry.getByCity(city)),
+          new SellImprovement(player, city),
+        ])
     )
   ),
 ];

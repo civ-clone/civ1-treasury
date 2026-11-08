@@ -103,6 +103,47 @@ describe('city:spend', (): void => {
     });
   });
 
+  (
+    [
+      [Temple, 40],
+      [Temple, 77],
+      [Warrior, 10],
+      [Warrior, 12],
+      [TestWonder, 250],
+    ] as [unknown, number][] as [typeof Buildable, number][]
+  ).forEach(([BuildItem, progress]): void => {
+    it(`shouldn't offer to buy a ${BuildItem.name} with ${progress} progress, which is already paid for`, async (): Promise<void> => {
+      const city = await setUpCity({
+          ruleRegistry,
+        }),
+        cityBuild = new CityBuild(
+          city,
+          availableCityBuildItemsRegistry,
+          ruleRegistry
+        );
+
+      cityBuildRegistry.register(cityBuild);
+
+      const playerTreasury = new PlayerTreasury(
+        city.player(),
+        Gold,
+        cityBuildRegistry,
+        ruleRegistry
+      );
+
+      playerTreasury.add(1000);
+      cityBuild.build(BuildItem);
+      cityBuild.add(new Production(progress));
+
+      expect(playerTreasury.cost(city)).to.deep.equal([]);
+
+      playerTreasury.buy(city);
+
+      expect(playerTreasury.value()).to.equal(1000);
+      expect(cityBuild.progress().value()).to.equal(progress);
+    });
+  });
+
   describe('in civil disorder', (): void => {
     const disorderRuleRegistry = new RuleRegistry();
 

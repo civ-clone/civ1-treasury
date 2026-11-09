@@ -1,10 +1,13 @@
 import {
+  PendingEffectRegistry,
+  instance as pendingEffectRegistryInstance,
+} from '@civ-clone/core-pending-effect/PendingEffectRegistry';
+import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
-import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import { Gold } from '../../Yields';
@@ -13,6 +16,7 @@ import Spend from '@civ-clone/core-treasury/Rules/Spend';
 import SpendCost from '@civ-clone/core-treasury/SpendCost';
 import Unit from '@civ-clone/core-unit/Unit';
 import Wonder from '@civ-clone/core-wonder/Wonder';
+import { civilDisorder } from '@civ-clone/civ1-city-happiness/lib/cityStatus';
 
 // Nothing is offered when the shields stored already cover the cost. v474.05 offers a $0 purchase then, which cuts
 // the stored shields back to the cost, so the surplus is lost; offering nothing keeps it.
@@ -27,19 +31,24 @@ const price = (cityBuild: CityBuild, cost: number): SpendCost =>
 
 // With `r` shields left, a unit costs r² / 20 + 2r, an improvement 2r, and a Wonder or a spaceship part 4r.
 // @see https://forums.civfanatics.com/threads/buy-unit-building-wonder-price.576026/
+//
+// `ruleRegistry` is unused since the disorder check reads the recorded status, and is kept so callers passing it still
+//  line up.
 export const getRules = (
-  ruleRegistry: RuleRegistry = ruleRegistryInstance
+  ruleRegistry: RuleRegistry = ruleRegistryInstance,
+  pendingEffects: PendingEffectRegistry = pendingEffectRegistryInstance
 ): Spend[] => [
   new Spend(
     new Criterion((cityBuild: CityBuild): boolean =>
       isBuilding(cityBuild, Unit)
     ),
-    // A city in civil disorder can't buy a unit, though it can still buy an improvement.
+    // A city in civil disorder can't buy a unit, though it can still buy an improvement. v474.05 (CityWorker.cs, the
+    //  BUY branch) checks the disorder recorded when the turn was processed, not the city's happiness now, so the
+    //  city screen's "Civil disorder" and the refusal always agree, even after the player rearranges the citizens
+    //  (civ-clone/web-renderer#680).
     new Criterion(
       (cityBuild: CityBuild): boolean =>
-        !ruleRegistry
-          .process(CivilDisorder, cityBuild.city())
-          .some((result: boolean): boolean => result)
+        civilDisorder(cityBuild.city(), pendingEffects) === null
     ),
     new Effect((cityBuild: CityBuild): SpendCost => {
       const remaining = cityBuild.remaining();

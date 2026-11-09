@@ -14,8 +14,11 @@ import SpendCost from '@civ-clone/core-treasury/SpendCost';
 import Unit from '@civ-clone/core-unit/Unit';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 
+// Nothing is offered when the shields stored already cover the cost. v474.05 offers a $0 purchase then, which cuts
+// the stored shields back to the cost, so the surplus is lost; offering nothing keeps it.
 const isBuilding = (cityBuild: CityBuild, Type: object): boolean =>
   cityBuild.building() !== null &&
+  cityBuild.remaining() > 0 &&
   Object.isPrototypeOf.call(Type, cityBuild.building()!.item());
 
 // v474.05 (CityWorker.cs, the BUY branch) doubles every price while the city has no shields stored.

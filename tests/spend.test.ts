@@ -1,3 +1,7 @@
+import {
+  PendingEffect,
+  PendingEffectRegistry,
+} from '@civ-clone/core-pending-effect';
 import AvailableCityBuildItemsRegistry from '@civ-clone/core-city-build/AvailableCityBuildItemsRegistry';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
@@ -6,6 +10,7 @@ import PlayerTreasury from '@civ-clone/core-treasury/PlayerTreasury';
 import { Production } from '@civ-clone/civ1-world/Yields';
 import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import Effect from '@civ-clone/core-rule/Effect';
+import { CIVIL_DISORDER } from '@civ-clone/civ1-city-happiness/lib/cityStatus';
 import Part from '@civ-clone/core-spaceship/Part';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import { Temple } from '@civ-clone/civ1-city-improvement/CityImprovements';
@@ -144,25 +149,47 @@ describe('city:spend', (): void => {
     });
   });
 
+  // As in v474.05, the disorder recorded when the turn was processed, which the city screen shows, not the city's
+  //  happiness now (civ-clone/web-renderer#680).
   describe('in civil disorder', (): void => {
-    const disorderRuleRegistry = new RuleRegistry();
-
-    disorderRuleRegistry.register(
-      ...spend(disorderRuleRegistry),
-      ...cityImprovementBuildCost(),
-      ...unitBuildCost(),
-      new CivilDisorder(new Effect((): boolean => true))
-    );
-
     (
       [
-        [Warrior, false],
-        [Temple, true],
-      ] as [unknown, boolean][] as [typeof Buildable, boolean][]
-    ).forEach(([BuildItem, canBuy]): void => {
+        [
+          'recorded, though the city is content now',
+          true,
+          false,
+          Warrior,
+          false,
+        ],
+        ['recorded, though the city is content now', true, false, Temple, true],
+        [
+          'not recorded, though the city is unhappy now',
+          false,
+          true,
+          Warrior,
+          true,
+        ],
+      ] as [string, boolean, boolean, unknown, boolean][] as [
+        string,
+        boolean,
+        boolean,
+        typeof Buildable,
+        boolean
+      ][]
+    ).forEach(([when, recorded, unhappyNow, BuildItem, canBuy]): void => {
       it(`${canBuy ? 'should' : "shouldn't"} offer to buy a ${
         BuildItem.name
-      }`, async (): Promise<void> => {
+      } with disorder ${when}`, async (): Promise<void> => {
+        const disorderRuleRegistry = new RuleRegistry(),
+          pendingEffects = new PendingEffectRegistry();
+
+        disorderRuleRegistry.register(
+          ...spend(disorderRuleRegistry, pendingEffects),
+          ...cityImprovementBuildCost(),
+          ...unitBuildCost(),
+          new CivilDisorder(new Effect((): boolean => unhappyNow))
+        );
+
         const city = await setUpCity({
             ruleRegistry: disorderRuleRegistry,
           }),
@@ -172,6 +199,10 @@ describe('city:spend', (): void => {
             disorderRuleRegistry
           ),
           disorderCityBuildRegistry = new CityBuildRegistry();
+
+        if (recorded) {
+          pendingEffects.register(new PendingEffect(CIVIL_DISORDER, city));
+        }
 
         disorderCityBuildRegistry.register(cityBuild);
 

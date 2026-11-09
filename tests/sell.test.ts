@@ -2,6 +2,12 @@ import {
   Library,
   Temple,
 } from '@civ-clone/civ1-city-improvement/CityImprovements';
+import {
+  PendingEffect,
+  PendingEffectRegistry,
+} from '@civ-clone/core-pending-effect';
+import sell, { SOLD, soldOn } from '../Rules/CityImprovement/sell';
+import City from '@civ-clone/core-city/City';
 import CityBuildRegistry from '@civ-clone/core-city-build/CityBuildRegistry';
 import { Gold } from '../Yields';
 import PlayerTreasury from '@civ-clone/core-treasury/PlayerTreasury';
@@ -10,18 +16,19 @@ import Turn from '@civ-clone/core-turn-based-game/Turn';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import cityImprovementBuildCost from '@civ-clone/civ1-city-improvement/Rules/City/build-cost';
 import { expect } from 'chai';
-import sell from '../Rules/CityImprovement/sell';
+import destroyed from '../Rules/City/destroyed';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 
 class TestWonder extends Wonder {}
 
 describe('city-improvement:sell', (): void => {
-  const setUp = async () => {
+  const setUp = async (pendingEffects = new PendingEffectRegistry()) => {
     const ruleRegistry = new RuleRegistry(),
       turn = new Turn();
 
     ruleRegistry.register(
-      ...sell(ruleRegistry, turn),
+      ...sell(ruleRegistry, turn, pendingEffects),
+      ...destroyed(pendingEffects),
       ...cityImprovementBuildCost()
     );
 
@@ -33,7 +40,7 @@ describe('city-improvement:sell', (): void => {
         ruleRegistry
       );
 
-    return { city, playerTreasury, ruleRegistry, turn };
+    return { city, pendingEffects, playerTreasury, ruleRegistry, turn };
   };
 
   it('should sell an improvement for its cost in shields, 1 gold each', async (): Promise<void> => {
@@ -101,5 +108,96 @@ describe('city-improvement:sell', (): void => {
 
     expect(otherTemple.destroyed()).to.equal(true);
     expect(otherTreasury.value()).to.equal(40);
+  });
+  // What a save holds is the record; the rules are built afresh on load (civ-clone/web-renderer#679).
+  const reload = async (city: City, pendingEffects: PendingEffectRegistry) => {
+    const loaded = new PendingEffectRegistry(),
+      ruleRegistry = new RuleRegistry(),
+      turn = new Turn();
+
+    pendingEffects
+      .entries()
+      .forEach((pendingEffect: PendingEffect): void =>
+        loaded.register(
+          new PendingEffect(
+            pendingEffect.handler(),
+            pendingEffect.target(),
+            pendingEffect.data()
+          )
+        )
+      );
+
+    ruleRegistry.register(
+      ...sell(ruleRegistry, turn, loaded),
+      ...cityImprovementBuildCost()
+    );
+
+    return {
+      loaded,
+      playerTreasury: new PlayerTreasury(
+        city.player(),
+        Gold,
+        new CityBuildRegistry(),
+        ruleRegistry
+      ),
+      ruleRegistry,
+      turn,
+    };
+  };
+
+  it('should still refuse a second sale that turn after a reload', async (): Promise<void> => {
+    const { city, pendingEffects, playerTreasury, ruleRegistry } =
+      await setUp();
+
+    playerTreasury.sell(new Temple(city, ruleRegistry));
+
+    const reloaded = await reload(city, pendingEffects),
+      library = new Library(city, reloaded.ruleRegistry);
+
+    expect(reloaded.playerTreasury.saleValue(library)).to.have.length(0);
+
+    reloaded.playerTreasury.sell(library);
+
+    expect(library.destroyed()).to.equal(false);
+
+    reloaded.turn.increment();
+
+    reloaded.playerTreasury.sell(library);
+
+    expect(library.destroyed()).to.equal(true);
+  });
+
+  it('should allow the first sale after reloading a save made before any', async (): Promise<void> => {
+    const { city, pendingEffects } = await setUp(),
+      reloaded = await reload(city, pendingEffects),
+      library = new Library(city, reloaded.ruleRegistry);
+
+    reloaded.playerTreasury.sell(library);
+
+    expect(library.destroyed()).to.equal(true);
+  });
+
+  it('should keep one record a city, with the turn it last sold on', async (): Promise<void> => {
+    const { city, pendingEffects, playerTreasury, ruleRegistry, turn } =
+      await setUp();
+
+    expect(soldOn(city, pendingEffects)).to.equal(null);
+
+    playerTreasury.sell(new Temple(city, ruleRegistry));
+    turn.increment();
+    playerTreasury.sell(new Library(city, ruleRegistry));
+
+    expect(pendingEffects.getByHandler(SOLD)).to.have.length(1);
+    expect(soldOn(city, pendingEffects)).to.equal(turn.value());
+  });
+
+  it('should forget the record when the city is destroyed', async (): Promise<void> => {
+    const { city, pendingEffects, playerTreasury, ruleRegistry } =
+      await setUp();
+
+    playerTreasury.sell(new Temple(city, ruleRegistry));
+    city.destroy();
+
+    expect(pendingEffects.getByHandler(SOLD)).to.have.length(0);
   });
 });

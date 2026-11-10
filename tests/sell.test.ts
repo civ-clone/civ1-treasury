@@ -10,6 +10,7 @@ import sell, { SOLD, soldOn } from '../Rules/CityImprovement/sell';
 import City from '@civ-clone/core-city/City';
 import CityBuildRegistry from '@civ-clone/core-city-build/CityBuildRegistry';
 import { Gold } from '../Yields';
+import Player from '@civ-clone/core-player/Player';
 import PlayerTreasury from '@civ-clone/core-treasury/PlayerTreasury';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import Turn from '@civ-clone/core-turn-based-game/Turn';
@@ -189,6 +190,47 @@ describe('city-improvement:sell', (): void => {
 
     expect(pendingEffects.getByHandler(SOLD)).to.have.length(1);
     expect(soldOn(city, pendingEffects)).to.equal(turn.value());
+  });
+
+  // v474.05 (CAPTURE.C) keeps the "sold this turn" bit on a captured city, and clears it when the owner's economy is
+  //  next processed (CITYMGT.C `city_process`, in the turn-advancing mode). So a captor who takes a city that sold this
+  //  turn can't sell there until their next turn, which is what this does too.
+  it('should refuse the new owner of a city that sold this turn until the turn after', async (): Promise<void> => {
+    const { city, pendingEffects, ruleRegistry, turn } = await setUp(),
+      captor = new Player(ruleRegistry),
+      captorTreasury = new PlayerTreasury(
+        captor,
+        Gold,
+        new CityBuildRegistry(),
+        ruleRegistry
+      ),
+      temple = new Temple(city, ruleRegistry),
+      library = new Library(city, ruleRegistry);
+
+    new PlayerTreasury(
+      city.player(),
+      Gold,
+      new CityBuildRegistry(),
+      ruleRegistry
+    ).sell(temple);
+
+    city.capture(captor);
+
+    expect(city.player()).to.equal(captor);
+    expect(soldOn(city, pendingEffects)).to.equal(turn.value());
+    expect(captorTreasury.saleValue(library)).to.have.length(0);
+
+    captorTreasury.sell(library);
+
+    expect(library.destroyed()).to.equal(false);
+    expect(captorTreasury.value()).to.equal(0);
+
+    turn.increment();
+
+    captorTreasury.sell(library);
+
+    expect(library.destroyed()).to.equal(true);
+    expect(captorTreasury.value()).to.equal(80);
   });
 
   it('should forget the record when the city is destroyed', async (): Promise<void> => {

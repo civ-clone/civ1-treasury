@@ -2,10 +2,6 @@ import {
   PendingEffectRegistry,
   instance as pendingEffectRegistryInstance,
 } from '@civ-clone/core-pending-effect/PendingEffectRegistry';
-import {
-  RuleRegistry,
-  instance as ruleRegistryInstance,
-} from '@civ-clone/core-rule/RuleRegistry';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import Criterion from '@civ-clone/core-rule/Criterion';
@@ -31,11 +27,7 @@ const price = (cityBuild: CityBuild, cost: number): SpendCost =>
 
 // With `r` shields left, a unit costs r² / 20 + 2r, an improvement 2r, and a Wonder or a spaceship part 4r.
 // @see https://forums.civfanatics.com/threads/buy-unit-building-wonder-price.576026/
-//
-// `ruleRegistry` is unused since the disorder check reads the recorded status, and is kept so callers passing it still
-//  line up.
 export const getRules = (
-  ruleRegistry: RuleRegistry = ruleRegistryInstance,
   pendingEffects: PendingEffectRegistry = pendingEffectRegistryInstance
 ): Spend[] => [
   new Spend(

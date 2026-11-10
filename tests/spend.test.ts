@@ -33,7 +33,7 @@ describe('city:spend', (): void => {
     cityBuildRegistry = new CityBuildRegistry();
 
   ruleRegistry.register(
-    ...spend(ruleRegistry),
+    ...spend(),
     ...cityImprovementBuildCost(),
     ...unitBuildCost(),
     ...buildCosts([
@@ -184,7 +184,7 @@ describe('city:spend', (): void => {
           pendingEffects = new PendingEffectRegistry();
 
         disorderRuleRegistry.register(
-          ...spend(disorderRuleRegistry, pendingEffects),
+          ...spend(pendingEffects),
           ...cityImprovementBuildCost(),
           ...unitBuildCost(),
           new CivilDisorder(new Effect((): boolean => unhappyNow))

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = void 0;
 const PendingEffectRegistry_1 = require("@civ-clone/core-pending-effect/PendingEffectRegistry");
-const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const CityImprovement_1 = require("@civ-clone/core-city-improvement/CityImprovement");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
@@ -22,10 +21,7 @@ const isBuilding = (cityBuild, Type) => cityBuild.building() !== null &&
 const price = (cityBuild, cost) => new SpendCost_1.default(Yields_1.Gold, cityBuild.progress().value() === 0 ? cost * 2 : cost);
 // With `r` shields left, a unit costs r² / 20 + 2r, an improvement 2r, and a Wonder or a spaceship part 4r.
 // @see https://forums.civfanatics.com/threads/buy-unit-building-wonder-price.576026/
-//
-// `ruleRegistry` is unused since the disorder check reads the recorded status, and is kept so callers passing it still
-//  line up.
-const getRules = (ruleRegistry = RuleRegistry_1.instance, pendingEffects = PendingEffectRegistry_1.instance) => [
+const getRules = (pendingEffects = PendingEffectRegistry_1.instance) => [
     new Spend_1.default(new Criterion_1.default((cityBuild) => isBuilding(cityBuild, Unit_1.default)), 
     // A city in civil disorder can't buy a unit, though it can still buy an improvement. v474.05 (CityWorker.cs, the
     //  BUY branch) checks the disorder recorded when the turn was processed, not the city's happiness now, so the

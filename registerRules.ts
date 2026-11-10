@@ -10,7 +10,7 @@ import { Game, defaultGame } from '@civ-clone/core-game';
 export const register = (game: Game): void =>
   game.rules.register(
     ...cityDestroyed(game.pendingEffects),
-    ...citySpend(game.rules, game.pendingEffects),
+    ...citySpend(game.pendingEffects),
     ...cityImprovementSell(game.rules, game.turn, game.pendingEffects),
     ...playerAction(game.cities, game.cityBuilds),
     ...playerAdded(

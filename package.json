@@ -52,7 +52,6 @@
     "@civ-clone/core-government": "^0.1.5",
     "@civ-clone/core-pending-effect": "^0.1.2",
     "@civ-clone/core-player": "^0.1.0",
-    "@civ-clone/core-registry": "^0.1.0",
     "@civ-clone/core-rule": "^0.1.0",
     "@civ-clone/core-spaceship": "^0.1.9",
     "@civ-clone/core-treasury": "^0.1.9",

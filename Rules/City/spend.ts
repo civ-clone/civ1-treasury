@@ -2,6 +2,13 @@ import {
   PendingEffectRegistry,
   instance as pendingEffectRegistryInstance,
 } from '@civ-clone/core-pending-effect/PendingEffectRegistry';
+import {
+  BuyFormula,
+  buyCost,
+  isBuying,
+  linearBuyCost,
+  squaredBuyCost,
+} from '@civ-clone/base-treasury/lib/buy';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import Criterion from '@civ-clone/core-rule/Criterion';
@@ -14,26 +21,20 @@ import Unit from '@civ-clone/core-unit/Unit';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import { civilDisorder } from '@civ-clone/civ1-city-happiness/lib/cityStatus';
 
-// Nothing is offered when the shields stored already cover the cost. v474.05 offers a $0 purchase then, which cuts
-// the stored shields back to the cost, so the surplus is lost; offering nothing keeps it.
-const isBuilding = (cityBuild: CityBuild, Type: object): boolean =>
-  cityBuild.building() !== null &&
-  cityBuild.remaining() > 0 &&
-  Object.isPrototypeOf.call(Type, cityBuild.building()!.item());
-
 // v474.05 (CityWorker.cs, the BUY branch) doubles every price while the city has no shields stored.
-const price = (cityBuild: CityBuild, cost: number): SpendCost =>
-  new SpendCost(Gold, cityBuild.progress().value() === 0 ? cost * 2 : cost);
+const price = (formula: BuyFormula): ((cityBuild: CityBuild) => SpendCost) =>
+  buyCost(Gold, formula, 2);
 
+// Nothing is offered when the shields stored already cover the cost (`isBuying`). v474.05 offers a $0 purchase then,
+// which cuts the stored shields back to the cost, so the surplus is lost; offering nothing keeps it.
+//
 // With `r` shields left, a unit costs r² / 20 + 2r, an improvement 2r, and a Wonder or a spaceship part 4r.
 // @see https://forums.civfanatics.com/threads/buy-unit-building-wonder-price.576026/
 export const getRules = (
   pendingEffects: PendingEffectRegistry = pendingEffectRegistryInstance
 ): Spend[] => [
   new Spend(
-    new Criterion((cityBuild: CityBuild): boolean =>
-      isBuilding(cityBuild, Unit)
-    ),
+    new Criterion((cityBuild: CityBuild): boolean => isBuying(cityBuild, Unit)),
     // A city in civil disorder can't buy a unit, though it can still buy an improvement. v474.05 (CityWorker.cs, the
     //  BUY branch) checks the disorder recorded when the turn was processed, not the city's happiness now, so the
     //  city screen's "Civil disorder" and the refusal always agree, even after the player rearranges the citizens
@@ -42,33 +43,23 @@ export const getRules = (
       (cityBuild: CityBuild): boolean =>
         civilDisorder(cityBuild.city(), pendingEffects) === null
     ),
-    new Effect((cityBuild: CityBuild): SpendCost => {
-      const remaining = cityBuild.remaining();
-
-      return price(cityBuild, Math.floor(remaining ** 2 / 20) + 2 * remaining);
-    })
+    new Effect(price(squaredBuyCost(20, 2)))
   ),
 
   new Spend(
     new Criterion(
       (cityBuild: CityBuild): boolean =>
-        isBuilding(cityBuild, CityImprovement) && !isBuilding(cityBuild, Wonder)
+        isBuying(cityBuild, CityImprovement) && !isBuying(cityBuild, Wonder)
     ),
-    new Effect(
-      (cityBuild: CityBuild): SpendCost =>
-        price(cityBuild, 2 * cityBuild.remaining())
-    )
+    new Effect(price(linearBuyCost(2)))
   ),
 
   new Spend(
     new Criterion(
       (cityBuild: CityBuild): boolean =>
-        isBuilding(cityBuild, Wonder) || isBuilding(cityBuild, Part)
+        isBuying(cityBuild, Wonder) || isBuying(cityBuild, Part)
     ),
-    new Effect(
-      (cityBuild: CityBuild): SpendCost =>
-        price(cityBuild, 4 * cityBuild.remaining())
-    )
+    new Effect(price(linearBuyCost(4)))
   ),
 ];
 

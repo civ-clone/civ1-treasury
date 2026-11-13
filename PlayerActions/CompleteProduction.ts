@@ -1,15 +1,6 @@
-import {
-  PlayerAction,
-  IPlayerAction,
-} from '@civ-clone/core-player/PlayerAction';
-import CityBuild from '@civ-clone/core-city-build/CityBuild';
-
-export interface ICompleteProduction extends IPlayerAction {
-  value(): CityBuild;
-}
-
-export class CompleteProduction
-  extends PlayerAction<CityBuild>
-  implements ICompleteProduction {}
-
-export default CompleteProduction;
+// Moved to base-treasury (civ-clone/web-renderer#1008): this path re-exports the same class.
+export type { ICompleteProduction } from '@civ-clone/base-treasury/PlayerActions/CompleteProduction';
+export {
+  CompleteProduction,
+  default,
+} from '@civ-clone/base-treasury/PlayerActions/CompleteProduction';

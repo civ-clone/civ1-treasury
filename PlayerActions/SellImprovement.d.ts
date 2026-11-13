@@ -1,12 +1,5 @@
-import {
-  PlayerAction,
-  IPlayerAction,
-} from '@civ-clone/core-player/PlayerAction';
-import City from '@civ-clone/core-city/City';
-export interface ISellImprovement extends IPlayerAction {
-  value(): City;
-}
-export declare class SellImprovement
-  extends PlayerAction<City>
-  implements ISellImprovement {}
-export default SellImprovement;
+export type { ISellImprovement } from '@civ-clone/base-treasury/PlayerActions/SellImprovement';
+export {
+  SellImprovement,
+  default,
+} from '@civ-clone/base-treasury/PlayerActions/SellImprovement';

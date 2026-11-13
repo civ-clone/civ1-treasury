@@ -22,7 +22,7 @@ import Added from '@civ-clone/core-player/Rules/Added';
 import Effect from '@civ-clone/core-rule/Effect';
 import { Gold } from '../../Yields';
 import Player from '@civ-clone/core-player/Player';
-import PlayerTreasury from '@civ-clone/core-treasury/PlayerTreasury';
+import { addPlayerTreasury } from '@civ-clone/base-treasury/lib/treasury';
 import isHuman from '@civ-clone/civ1-difficulty/isHuman';
 import { levelOf } from '@civ-clone/civ1-difficulty/level';
 
@@ -34,24 +34,19 @@ export const getRules = (
   clientRegistry: ClientRegistry = clientRegistryInstance
 ): Added[] => [
   new Added(
-    new Effect((player: Player): void => {
-      const playerTreasury = new PlayerTreasury(
+    new Effect((player: Player): void =>
+      addPlayerTreasury(
         player,
         Gold,
+        // v474.05 (OpenCivOne `StartGameMenu.cs` L277-L280): on Chieftain, the human starts with 50 gold.
+        levelOf(gameDifficultyRegistry) === 0 && isHuman(player, clientRegistry)
+          ? 50
+          : 0,
+        playerTreasuryRegistry,
         cityBuildRegistry,
         ruleRegistry
-      );
-
-      // v474.05 (OpenCivOne `StartGameMenu.cs` L277-L280): on Chieftain, the human starts with 50 gold.
-      if (
-        levelOf(gameDifficultyRegistry) === 0 &&
-        isHuman(player, clientRegistry)
-      ) {
-        playerTreasury.add(50);
-      }
-
-      playerTreasuryRegistry.register(playerTreasury);
-    })
+      )
+    )
   ),
 ];
 

@@ -20,15 +20,13 @@ import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
-import BuildItem from '@civ-clone/core-city-build/BuildItem';
-import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
-import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import ProcessYield from '@civ-clone/core-city/Rules/ProcessYield';
-import Updated from '@civ-clone/core-treasury/Rules/Updated';
 import Yield from '@civ-clone/core-yield/Yield';
+import collectYields from '@civ-clone/base-treasury/lib/collect';
+import governedBy from '@civ-clone/base-government-change/lib/governedBy';
 
 export const getRules = (
   playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance,
@@ -44,43 +42,19 @@ export const getRules = (
     // Emrich A. (1992). Sid Meier's Civilization, or Rome on 640K a Day. Rocklin, CA: Prima Publishing
     new Criterion(
       (cityYield: Yield, city: City): boolean =>
-        !playerGovernmentRegistry
-          .getBy('player', city.player())
-          .some((playerGovernment) => playerGovernment.is(Anarchy))
+        !governedBy(city.player(), [Anarchy], playerGovernmentRegistry)
     ),
-    new Effect((cityYield: Yield, city: City, yields: Yield[]): void => {
-      const playerTreasury = playerTreasuryRegistry.getByPlayerAndType(
-        city.player(),
-        Gold
-      );
-
-      yields.forEach((cityYield) => {
-        if (!(cityYield instanceof Gold)) {
-          return;
-        }
-
-        playerTreasury.add(cityYield);
-
-        if (cityYield instanceof CityImprovementMaintenanceGold) {
-          if (playerTreasury.value() < 0) {
-            const cityImprovement = cityYield.cityImprovement()!,
-              buildItem = new BuildItem(
-                cityImprovement.constructor as typeof Buildable,
-                city,
-                ruleRegistry
-              );
-
-            cityImprovementRegistry.unregister(cityImprovement);
-
-            playerTreasury.add(buildItem.cost().value());
-
-            engine.emit('city:unsupported-improvement', city, cityImprovement);
-
-            return;
-          }
-        }
-      });
-    })
+    // An improvement whose upkeep the treasury can't pay is sold for its cost in shields.
+    new Effect(
+      collectYields(
+        Gold,
+        CityImprovementMaintenanceGold,
+        playerTreasuryRegistry,
+        ruleRegistry,
+        cityImprovementRegistry,
+        engine
+      )
+    )
   ),
 ];
 

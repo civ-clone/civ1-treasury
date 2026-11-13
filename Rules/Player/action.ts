@@ -7,26 +7,14 @@ import {
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
 import Action from '@civ-clone/core-player/Rules/Action';
-import City from '@civ-clone/core-city/City';
-import { CompleteProduction, SellImprovement } from '../../PlayerActions';
 import Effect from '@civ-clone/core-rule/Effect';
-import Player from '@civ-clone/core-player/Player';
-import PlayerAction from '@civ-clone/core-player/PlayerAction';
+import buyAndSell from '@civ-clone/base-treasury/lib/actions';
 
 export const getRules = (
   cityRegistry: CityRegistry = cityRegistryInstance,
   cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance
 ): Action[] => [
-  new Action(
-    new Effect((player: Player): PlayerAction[] =>
-      cityRegistry
-        .getByPlayer(player)
-        .flatMap((city: City) => [
-          new CompleteProduction(player, cityBuildRegistry.getByCity(city)),
-          new SellImprovement(player, city),
-        ])
-    )
-  ),
+  new Action(new Effect(buyAndSell(cityRegistry, cityBuildRegistry))),
 ];
 
 export default getRules;

@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SellImprovement = void 0;
-const PlayerAction_1 = require("@civ-clone/core-player/PlayerAction");
-class SellImprovement extends PlayerAction_1.PlayerAction {
-}
-exports.SellImprovement = SellImprovement;
-exports.default = SellImprovement;
+exports.default = exports.SellImprovement = void 0;
+var SellImprovement_1 = require("@civ-clone/base-treasury/PlayerActions/SellImprovement");
+Object.defineProperty(exports, "SellImprovement", { enumerable: true, get: function () { return SellImprovement_1.SellImprovement; } });
+Object.defineProperty(exports, "default", { enumerable: true, get: function () { return SellImprovement_1.default; } });
 //# sourceMappingURL=SellImprovement.js.map

@@ -39,8 +39,8 @@
   "dependencies": {
     "@civ-clone/base-city-yield-city-improvement-maintenance-gold": "^0.1.0",
     "@civ-clone/base-city-yield-gold": "^0.1.0",
-    "@civ-clone/base-government-change": "github:civ-clone/base-government-change#feat/government-change",
-    "@civ-clone/base-treasury": "github:civ-clone/base-treasury#feat/treasury-wiring",
+    "@civ-clone/base-government-change": "^0.1.0",
+    "@civ-clone/base-treasury": "^0.1.2",
     "@civ-clone/civ1-city-happiness": "github:civ-clone/civ1-city-happiness",
     "@civ-clone/civ1-difficulty": "github:civ-clone/civ1-difficulty",
     "@civ-clone/civ1-government": "github:civ-clone/civ1-government",
